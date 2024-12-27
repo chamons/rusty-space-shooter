@@ -1,0 +1,29 @@
+[package]
+name = "launcher"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.86"
+macroquad = "0.4"
+
+game = { path = "../game", optional = true }
+
+wasmtime = { version = "21.0.1", features = [
+    "component-model",
+], optional = true }
+wasmtime-wasi = { version = "21.0.1", optional = true }
+notify-debouncer-full = { version = "0.3.1", optional = true }
+notify = { version = "6.1.1", optional = true }
+async-trait = "0.1.83"
+async-mutex = "1.4.0"
+
+[features]
+default = ["direct"]
+hotreload = [
+    "dep:wasmtime",
+    "dep:wasmtime-wasi",
+    "dep:notify-debouncer-full",
+    "dep:notify",
+]
+direct = ["dep:game"]
