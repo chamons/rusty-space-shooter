@@ -3,9 +3,10 @@ wit_bindgen::generate!({
     path: "../wit",
 });
 
+#[allow(dead_code)]
 mod colors;
-pub use colors::*;
 
+#[allow(dead_code)]
 mod ui;
 
 mod game;
@@ -13,6 +14,8 @@ pub use game::Game;
 
 mod infrastructure;
 pub use infrastructure::*;
+
+mod state;
 
 #[cfg(feature = "hotreload")]
 export!(GameGuest);

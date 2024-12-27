@@ -3,9 +3,10 @@ use std::sync::Arc;
 use macroquad::{
     color::{Color, WHITE},
     math::Vec2,
-    shapes::draw_line,
+    shapes::{draw_circle, draw_line},
     text::{draw_text_ex, Font, TextParams},
     texture::{draw_texture_ex, DrawTextureParams, Texture2D},
+    window::{screen_height, screen_width},
 };
 
 use crate::texture_cache::TextureCache;
@@ -109,6 +110,28 @@ impl GameScreen {
             },
         )
     }
+
+    pub fn draw_circle(&self, position: Position, radius: f32, color: GameColor) {
+        draw_circle(
+            position.x,
+            position.y,
+            radius,
+            Color {
+                r: color.r,
+                g: color.g,
+                b: color.b,
+                a: color.a,
+            },
+        );
+    }
+
+    pub fn width(&self) -> f32 {
+        screen_width()
+    }
+
+    pub fn height(&self) -> f32 {
+        screen_height()
+    }
 }
 
 #[cfg(not(feature = "hotreload"))]
@@ -124,5 +147,17 @@ impl game::GameScreenInterface for GameScreen {
 
     fn draw_line(&self, first: Position, second: Position, thickness: f32, color: GameColor) {
         self.draw_line(first, second, thickness, color);
+    }
+
+    fn draw_circle(&self, position: Position, radius: f32, color: GameColor) {
+        self.draw_circle(position, radius, color);
+    }
+
+    fn width(&self) -> f32 {
+        screen_width()
+    }
+
+    fn height(&self) -> f32 {
+        screen_height()
     }
 }

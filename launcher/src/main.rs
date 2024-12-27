@@ -52,8 +52,8 @@ async fn run_frame<R: RunnableGameInstance>(instance: &R, screen: GameScreen) {
 
 #[cfg(not(feature = "hotreload"))]
 async fn run(font: Font, texture_cache: TextureCache) -> Result<()> {
-    let instance = Game::new();
     let screen = GameScreen::new(font, texture_cache);
+    let instance = Game::new(&screen);
     loop {
         run_frame(&instance, screen.clone()).await;
     }
@@ -63,17 +63,19 @@ async fn run(font: Font, texture_cache: TextureCache) -> Result<()> {
 async fn run(font: Font, texture_cache: TextureCache) -> Result<()> {
     let context = WebAssemblyContext::load()?;
     let mut assembly = WebAssemblyInstance::load(context)?;
-    let mut instance = assembly.create_game_instance()?;
+
+    let screen = GameScreen::new(font, texture_cache);
+
+    let mut instance = assembly.create_game_instance(screen.clone())?;
 
     let file_watcher = crate::hotreload::watcher::FileWatcher::new(crate::hotreload::wasm_path()?)?;
-    let screen = GameScreen::new(font, texture_cache);
 
     loop {
         if file_watcher.changed() {
             let save_data = instance.save();
             let context = WebAssemblyContext::load()?;
             assembly = WebAssemblyInstance::load(context)?;
-            instance = assembly.create_game_instance()?;
+            instance = assembly.create_game_instance(screen.clone())?;
             if let Ok(save_data) = save_data {
                 let _ = instance.load(save_data);
             }

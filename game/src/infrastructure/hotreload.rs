@@ -12,8 +12,8 @@ impl Guest for GameGuest {
 }
 
 impl GuestGameInstance for Game {
-    fn new() -> Game {
-        Game::new()
+    fn new(screen: &GameScreen) -> Game {
+        Game::new(screen)
     }
 
     fn save(&self) -> Vec<u8> {

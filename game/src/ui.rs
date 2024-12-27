@@ -1,7 +1,7 @@
 use crate::{
     caffeinated_gorilla::space::types::{GameColor, Position, Size},
+    colors::WHITE,
     infrastructure::Screen,
-    WHITE,
 };
 
 impl From<(f32, f32)> for Position {

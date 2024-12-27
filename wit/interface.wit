@@ -169,6 +169,9 @@ interface host-api {
     draw-text: func(text: string, position: position, size: f32, color: game-color);
     draw-image: func(filename: string, position: position, size: option<size>);
     draw-line: func(first: position, second: position, thickness: f32, color: game-color);
+    draw-circle: func(position: position, radius: f32, color: game-color);
+    width: func() -> f32;
+    height: func() -> f32;
   }
 }
 
@@ -177,7 +180,7 @@ interface game-api {
   use host-api.{game-screen};
 
   resource game-instance {
-    constructor();
+    constructor(screen: borrow<game-screen>);
 
     run-frame: func(mouse: mouse-info, key: keyboard-info, screen: borrow<game-screen>);
     save: func() -> list<u8>;

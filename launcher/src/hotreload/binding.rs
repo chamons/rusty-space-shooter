@@ -3,6 +3,7 @@ use std::sync::{Arc, Mutex};
 use anyhow::Result;
 
 use caffeinated_gorilla::space::types::{GameColor, Position, Size};
+use macroquad::prelude::{screen_height, screen_width};
 use wasmtime::component::{Component, Linker, Resource, ResourceAny};
 use wasmtime::{Config, Engine, Store};
 use wasmtime_wasi::{ResourceTable, WasiCtx, WasiCtxBuilder, WasiView};
@@ -89,6 +90,29 @@ impl caffeinated_gorilla::space::host_api::HostGameScreen for MyState {
         Ok(())
     }
 
+    fn draw_circle(
+        &mut self,
+        screen: Resource<GameScreen>,
+        position: Position,
+        radius: f32,
+        color: GameColor,
+    ) -> wasmtime::Result<()> {
+        debug_assert!(!screen.owned());
+        let screen = self.table.get(&screen)?;
+        screen.draw_circle(position, radius, color);
+        Ok(())
+    }
+
+    fn width(&mut self, screen: Resource<GameScreen>) -> wasmtime::Result<f32> {
+        debug_assert!(!screen.owned());
+        Ok(screen_width())
+    }
+
+    fn height(&mut self, screen: Resource<GameScreen>) -> wasmtime::Result<f32> {
+        debug_assert!(!screen.owned());
+        Ok(screen_height())
+    }
+
     fn drop(&mut self, screen: Resource<GameScreen>) -> wasmtime::Result<()> {
         debug_assert!(screen.owned());
         self.table.delete(screen)?;
@@ -143,7 +167,7 @@ impl WebAssemblyInstance {
         })
     }
 
-    pub fn create_game_instance(&mut self) -> Result<GameInstance> {
+    pub fn create_game_instance(&mut self, screen: GameScreen) -> Result<GameInstance> {
         let instance_type = self
             .bindings
             .caffeinated_gorilla_space_game_api()
@@ -151,7 +175,8 @@ impl WebAssemblyInstance {
 
         let instance = {
             let mut context = self.context.lock().unwrap();
-            instance_type.call_constructor(&mut context.store)?
+            let screen = context.store.data_mut().convert_to_resource(screen)?;
+            instance_type.call_constructor(&mut context.store, screen)?
         };
 
         Ok(GameInstance {

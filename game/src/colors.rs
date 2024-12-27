@@ -27,3 +27,10 @@ pub const AQUA: GameColor = GameColor {
     b: 1.0,
     a: 1.0,
 };
+
+pub const YELLOW: GameColor = GameColor {
+    r: 1.0,
+    g: 1.0,
+    b: 0.0,
+    a: 1.0,
+};
