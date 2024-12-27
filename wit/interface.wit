@@ -169,6 +169,7 @@ interface host-api {
     draw-text: func(text: string, position: position, size: f32, color: game-color);
     draw-image: func(filename: string, position: position, size: option<size>);
     draw-line: func(first: position, second: position, thickness: f32, color: game-color);
+    draw-rectangle: func(position: position, size: size, color: game-color);
     draw-circle: func(position: position, radius: f32, color: game-color);
     width: func() -> f32;
     height: func() -> f32;

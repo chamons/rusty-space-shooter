@@ -3,7 +3,7 @@ use std::sync::Arc;
 use macroquad::{
     color::{Color, WHITE},
     math::Vec2,
-    shapes::{draw_circle, draw_line},
+    shapes::{draw_circle, draw_line, draw_rectangle},
     text::{draw_text_ex, Font, TextParams},
     texture::{draw_texture_ex, DrawTextureParams, Texture2D},
     window::{screen_height, screen_width},
@@ -125,6 +125,21 @@ impl GameScreen {
         );
     }
 
+    pub fn draw_rectangle(&self, position: Position, size: Size, color: GameColor) {
+        draw_rectangle(
+            position.x,
+            position.y,
+            size.width,
+            size.height,
+            Color {
+                r: color.r,
+                g: color.g,
+                b: color.b,
+                a: color.a,
+            },
+        );
+    }
+
     pub fn width(&self) -> f32 {
         screen_width()
     }
@@ -151,6 +166,10 @@ impl game::GameScreenInterface for GameScreen {
 
     fn draw_circle(&self, position: Position, radius: f32, color: GameColor) {
         self.draw_circle(position, radius, color);
+    }
+
+    fn draw_rectangle(&self, position: Position, size: Size, color: GameColor) {
+        self.draw_rectangle(position, size, color);
     }
 
     fn width(&self) -> f32 {

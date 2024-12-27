@@ -1,11 +1,12 @@
 use std::sync::{Arc, Mutex};
 
 use crate::{
-    caffeinated_gorilla::space::types::Key,
-    colors::YELLOW,
+    caffeinated_gorilla::space::types::{Key, Size},
+    colors::{AQUA, RED, YELLOW},
     exports::caffeinated_gorilla::space::game_api::{KeyboardInfo, MouseInfo},
     infrastructure::Screen,
-    state::GameState,
+    state::{GameState, MOVEMENT_SPEED},
+    ui::ScreenExt,
 };
 
 pub struct Game {
@@ -35,31 +36,64 @@ impl Game {
         frame_time: f32,
     ) {
         let mut state = self.state.lock().unwrap();
-        let position = &mut state.position;
+        state.add_squares(screen);
 
-        const MOVEMENT_SPEED: f32 = 200.0;
-        const CIRCLE_RADIUS: f32 = 16.0;
+        process_keyboard_input(&mut state, key, screen, frame_time);
 
-        if key.down.contains(&Key::Up) {
-            position.y -= MOVEMENT_SPEED * frame_time;
-        }
-        if key.down.contains(&Key::Down) {
-            position.y += MOVEMENT_SPEED * frame_time;
-        }
-        if key.down.contains(&Key::Left) {
-            position.x -= MOVEMENT_SPEED * frame_time;
-        }
-        if key.down.contains(&Key::Right) {
-            position.x += MOVEMENT_SPEED * frame_time;
-        }
+        run_physics(&mut state, screen, frame_time);
+        draw(&mut state, screen);
+    }
+}
 
-        position.x = position
-            .x
-            .clamp(CIRCLE_RADIUS, screen.width() - CIRCLE_RADIUS);
-        position.y = position
-            .y
-            .clamp(CIRCLE_RADIUS, screen.height() - CIRCLE_RADIUS);
+fn process_keyboard_input(
+    state: &mut GameState,
+    key: KeyboardInfo,
+    screen: &Screen,
+    frame_time: f32,
+) {
+    let circle = &mut state.circle;
 
-        screen.draw_circle((position.x, position.y).into(), CIRCLE_RADIUS, YELLOW);
+    if key.down.contains(&Key::Up) {
+        circle.position.y -= MOVEMENT_SPEED * frame_time;
+    }
+    if key.down.contains(&Key::Down) {
+        circle.position.y += MOVEMENT_SPEED * frame_time;
+    }
+    if key.down.contains(&Key::Left) {
+        circle.position.x -= MOVEMENT_SPEED * frame_time;
+    }
+    if key.down.contains(&Key::Right) {
+        circle.position.x += MOVEMENT_SPEED * frame_time;
+    }
+
+    circle.clamp_to_screen(screen);
+}
+
+fn run_physics(state: &mut GameState, screen: &Screen, frame_time: f32) {
+    for square in &mut state.squares {
+        square.position.y += square.speed * frame_time;
+    }
+
+    state
+        .squares
+        .retain(|square| square.position.y < screen.height() + square.size);
+}
+
+fn draw(state: &mut GameState, screen: &Screen) {
+    screen.draw_circle(
+        (state.circle.position.x, state.circle.position.y).into(),
+        state.circle.size / 2.0,
+        YELLOW,
+    );
+
+    for square in &state.squares {
+        screen.draw_rectangle(
+            square.upper_left().into(),
+            Size {
+                width: square.size,
+                height: square.size,
+            },
+            AQUA,
+        );
     }
 }

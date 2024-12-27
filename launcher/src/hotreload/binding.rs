@@ -103,6 +103,19 @@ impl caffeinated_gorilla::space::host_api::HostGameScreen for MyState {
         Ok(())
     }
 
+    fn draw_rectangle(
+        &mut self,
+        screen: Resource<GameScreen>,
+        position: Position,
+        size: Size,
+        color: GameColor,
+    ) -> wasmtime::Result<()> {
+        debug_assert!(!screen.owned());
+        let screen = self.table.get(&screen)?;
+        screen.draw_rectangle(position, size, color);
+        Ok(())
+    }
+
     fn width(&mut self, screen: Resource<GameScreen>) -> wasmtime::Result<f32> {
         debug_assert!(!screen.owned());
         Ok(screen_width())
