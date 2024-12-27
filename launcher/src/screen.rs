@@ -11,10 +11,10 @@ use macroquad::{
 use crate::texture_cache::TextureCache;
 
 #[cfg(not(feature = "hotreload"))]
-use game::example::game::types::{GameColor, Position, Size};
+use game::caffeinated_gorilla::space::types::{GameColor, Position, Size};
 
 #[cfg(feature = "hotreload")]
-use crate::hotreload::binding::example::game::types::{GameColor, Position, Size};
+use crate::hotreload::binding::caffeinated_gorilla::space::types::{GameColor, Position, Size};
 
 struct ImageRenderRequest {
     filename: String,

@@ -1,4 +1,4 @@
-use crate::example::game::types::GameColor;
+use crate::caffeinated_gorilla::space::types::GameColor;
 
 pub const WHITE: GameColor = GameColor {
     r: 0.0,

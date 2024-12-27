@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use crate::{
-    exports::example::game::game_api::{KeyboardInfo, MouseInfo},
+    exports::caffeinated_gorilla::space::game_api::{KeyboardInfo, MouseInfo},
     infrastructure::Screen,
     ui::{ScreenExt, TextSize},
     AQUA, BLUE, RED,

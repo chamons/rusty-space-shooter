@@ -1,10 +1,10 @@
-package example:game;
+package caffeinated-gorilla:space;
 
 interface types {
   enum key {
     space,
     apostrophe,
-    comma,
+    comma,  
     minus,
     period,
     slash,
@@ -185,7 +185,7 @@ interface game-api {
   }
 }
 
-world hotreload-example {
+world space-shooter-game {
   import host-api;
   export game-api;
 }

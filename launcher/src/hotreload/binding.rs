@@ -2,12 +2,12 @@ use std::sync::{Arc, Mutex};
 
 use anyhow::Result;
 
-use example::game::types::{GameColor, Position, Size};
+use caffeinated_gorilla::space::types::{GameColor, Position, Size};
 use wasmtime::component::{Component, Linker, Resource, ResourceAny};
 use wasmtime::{Config, Engine, Store};
 use wasmtime_wasi::{ResourceTable, WasiCtx, WasiCtxBuilder, WasiView};
 
-use exports::example::game::game_api::{GuestGameInstance, KeyboardInfo, MouseInfo};
+use exports::caffeinated_gorilla::space::game_api::{GuestGameInstance, KeyboardInfo, MouseInfo};
 
 use super::wasm_path;
 pub use crate::GameScreen;
@@ -15,7 +15,7 @@ pub use crate::GameScreen;
 wasmtime::component::bindgen!({
     path: "../wit",
     with: {
-        "example:game/host-api/game-screen": GameScreen,
+        "caffeinated-gorilla:space/host-api/game-screen": GameScreen,
     },
     trappable_imports: true,
 });
@@ -44,10 +44,10 @@ impl MyState {
     }
 }
 
-impl example::game::host_api::Host for MyState {}
-impl example::game::types::Host for MyState {}
+impl caffeinated_gorilla::space::host_api::Host for MyState {}
+impl caffeinated_gorilla::space::types::Host for MyState {}
 
-impl example::game::host_api::HostGameScreen for MyState {
+impl caffeinated_gorilla::space::host_api::HostGameScreen for MyState {
     fn draw_text(
         &mut self,
         screen: Resource<GameScreen>,
@@ -122,7 +122,7 @@ impl WebAssemblyContext {
 }
 
 pub struct WebAssemblyInstance {
-    bindings: HotreloadExample,
+    bindings: SpaceShooterGame,
     context: Arc<Mutex<WebAssemblyContext>>,
 }
 
@@ -133,10 +133,10 @@ impl WebAssemblyInstance {
         let component = Component::from_file(&context.engine, wasm_path)?;
 
         let mut linker = Linker::new(&context.engine);
-        HotreloadExample::add_to_linker(&mut linker, |state: &mut MyState| state)?;
+        SpaceShooterGame::add_to_linker(&mut linker, |state: &mut MyState| state)?;
         wasmtime_wasi::add_to_linker_sync(&mut linker)?;
 
-        let (bindings, _) = HotreloadExample::instantiate(&mut context.store, &component, &linker)?;
+        let (bindings, _) = SpaceShooterGame::instantiate(&mut context.store, &component, &linker)?;
         Ok(Self {
             bindings,
             context: Arc::new(Mutex::new(context)),
@@ -144,7 +144,10 @@ impl WebAssemblyInstance {
     }
 
     pub fn create_game_instance(&mut self) -> Result<GameInstance> {
-        let instance_type = self.bindings.example_game_game_api().game_instance();
+        let instance_type = self
+            .bindings
+            .caffeinated_gorilla_space_game_api()
+            .game_instance();
 
         let instance = {
             let mut context = self.context.lock().unwrap();

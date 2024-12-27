@@ -19,7 +19,7 @@ async-trait = "0.1.83"
 async-mutex = "1.4.0"
 
 [features]
-default = ["direct"]
+default = ["hotreload"]
 hotreload = [
     "dep:wasmtime",
     "dep:wasmtime-wasi",

@@ -1,5 +1,5 @@
 use crate::{
-    example::game::types::{GameColor, Position, Size},
+    caffeinated_gorilla::space::types::{GameColor, Position, Size},
     infrastructure::Screen,
     WHITE,
 };

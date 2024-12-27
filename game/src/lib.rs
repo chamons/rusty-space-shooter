@@ -1,5 +1,5 @@
 wit_bindgen::generate!({
-    world: "hotreload-example",
+    world: "space-shooter-game",
     path: "../wit",
 });
 

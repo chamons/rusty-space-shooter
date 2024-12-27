@@ -15,13 +15,13 @@ mod hotreload;
 
 #[cfg(feature = "hotreload")]
 use crate::hotreload::binding::{
-    example::game::types::{KeyboardInfo, MouseInfo},
+    caffeinated_gorilla::space::types::{KeyboardInfo, MouseInfo},
     WebAssemblyContext, WebAssemblyInstance,
 };
 
 #[cfg(not(feature = "hotreload"))]
 pub use game::{
-    exports::example::game::game_api::{KeyboardInfo, MouseInfo},
+    exports::caffeinated_gorilla::space::game_api::{KeyboardInfo, MouseInfo},
     Game,
 };
 
@@ -83,7 +83,7 @@ async fn run(font: Font, texture_cache: TextureCache) -> Result<()> {
     }
 }
 
-#[macroquad::main("Rust Hotreload Example")]
+#[macroquad::main("Rusty Space Shooter")]
 async fn main() -> Result<()> {
     let font = load_ttf_font_from_bytes(include_bytes!("../../resources/Kreon-Regular.ttf"))
         .expect("Unable to load font");
