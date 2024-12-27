@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use anyhow::Result;
 
 use caffeinated_gorilla::space::types::{GameColor, Position, Size};
-use macroquad::prelude::{screen_height, screen_width};
+use macroquad::prelude::*;
 use wasmtime::component::{Component, Linker, Resource, ResourceAny};
 use wasmtime::{Config, Engine, Store};
 use wasmtime_wasi::{ResourceTable, WasiCtx, WasiCtxBuilder, WasiView};
@@ -198,8 +198,14 @@ impl GameInstance<'_> {
         let mut context = self.context.lock().unwrap();
         let screen = context.store.data_mut().convert_to_resource(screen)?;
 
-        self.instance_type
-            .call_run_frame(&mut context.store, self.instance, mouse, &key, screen)
+        self.instance_type.call_run_frame(
+            &mut context.store,
+            self.instance,
+            mouse,
+            &key,
+            screen,
+            get_frame_time(),
+        )
     }
 
     pub fn save(&self) -> Result<Vec<u8>> {

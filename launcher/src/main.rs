@@ -36,7 +36,7 @@ pub trait RunnableGameInstance: Send + Sync {
 #[async_trait]
 impl RunnableGameInstance for Game {
     fn run_frame(&self, mouse: MouseInfo, key: KeyboardInfo, screen: GameScreen) {
-        Game::run_frame(self, mouse, key, &screen)
+        Game::run_frame(self, mouse, key, &screen, get_frame_time())
     }
 }
 

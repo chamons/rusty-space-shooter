@@ -27,24 +27,39 @@ impl Game {
         *self.state.lock().unwrap() = bincode::deserialize(&data).expect("Unable to restore state");
     }
 
-    pub fn run_frame(&self, _mouse: MouseInfo, key: KeyboardInfo, screen: &Screen) {
+    pub fn run_frame(
+        &self,
+        _mouse: MouseInfo,
+        key: KeyboardInfo,
+        screen: &Screen,
+        frame_time: f32,
+    ) {
         let mut state = self.state.lock().unwrap();
         let position = &mut state.position;
 
-        const MOVEMENT_SPEED: f32 = 1.5;
+        const MOVEMENT_SPEED: f32 = 200.0;
+        const CIRCLE_RADIUS: f32 = 16.0;
+
         if key.down.contains(&Key::Up) {
-            position.y -= MOVEMENT_SPEED;
+            position.y -= MOVEMENT_SPEED * frame_time;
         }
         if key.down.contains(&Key::Down) {
-            position.y += MOVEMENT_SPEED;
+            position.y += MOVEMENT_SPEED * frame_time;
         }
         if key.down.contains(&Key::Left) {
-            position.x -= MOVEMENT_SPEED;
+            position.x -= MOVEMENT_SPEED * frame_time;
         }
         if key.down.contains(&Key::Right) {
-            position.x += MOVEMENT_SPEED;
+            position.x += MOVEMENT_SPEED * frame_time;
         }
 
-        screen.draw_circle((position.x, position.y).into(), 16.0, YELLOW);
+        position.x = position
+            .x
+            .clamp(CIRCLE_RADIUS, screen.width() - CIRCLE_RADIUS);
+        position.y = position
+            .y
+            .clamp(CIRCLE_RADIUS, screen.height() - CIRCLE_RADIUS);
+
+        screen.draw_circle((position.x, position.y).into(), CIRCLE_RADIUS, YELLOW);
     }
 }

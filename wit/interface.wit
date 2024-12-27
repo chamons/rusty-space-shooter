@@ -182,7 +182,7 @@ interface game-api {
   resource game-instance {
     constructor(screen: borrow<game-screen>);
 
-    run-frame: func(mouse: mouse-info, key: keyboard-info, screen: borrow<game-screen>);
+    run-frame: func(mouse: mouse-info, key: keyboard-info, screen: borrow<game-screen>, frame-time: f32);
     save: func() -> list<u8>;
     restore: func(data: list<u8>);
   }
