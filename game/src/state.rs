@@ -1,6 +1,9 @@
-use crate::Screen;
+use crate::{
+    colors::{AQUA, BLUE, RED, WHITE, YELLOW},
+    Screen,
+};
 
-use rand::{thread_rng, Rng};
+use rand::{seq::SliceRandom, thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 
 pub const MOVEMENT_SPEED: f32 = 200.0;
@@ -21,10 +24,30 @@ impl From<Position> for crate::caffeinated_gorilla::space::types::Position {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Color {
+    pub r: f32,
+    pub g: f32,
+    pub b: f32,
+    pub a: f32,
+}
+
+impl From<Color> for crate::caffeinated_gorilla::space::types::GameColor {
+    fn from(value: Color) -> Self {
+        crate::caffeinated_gorilla::space::types::GameColor {
+            r: value.r,
+            g: value.g,
+            b: value.b,
+            a: value.a,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Shape {
     pub position: Position,
     pub speed: f32,
     pub size: f32,
+    pub color: Color,
 }
 
 impl Shape {
@@ -70,6 +93,7 @@ impl GameState {
                 },
                 speed: MOVEMENT_SPEED,
                 size: 32.0,
+                color: YELLOW,
             },
             squares: vec![],
         }
@@ -84,10 +108,12 @@ impl GameState {
                 x: rng.gen_range((size / 2.0)..(screen.width() - size / 2.0)),
                 y: -size,
             };
+            let color = [WHITE, RED, AQUA, BLUE, YELLOW].choose(&mut rng).unwrap();
             self.squares.push(Shape {
                 position,
                 speed,
                 size,
+                color: color.clone(),
             });
         }
     }

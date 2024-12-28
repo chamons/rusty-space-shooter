@@ -2,8 +2,13 @@ use std::fmt::Debug;
 
 use anyhow::Result;
 use async_trait::async_trait;
-use hotreload::binding::caffeinated_gorilla::space::types::{GameColor, Key, Position};
 use macroquad::prelude::*;
+
+#[cfg(not(feature = "hotreload"))]
+use game::caffeinated_gorilla::space::types::{GameColor, Position};
+
+#[cfg(feature = "hotreload")]
+use crate::hotreload::binding::caffeinated_gorilla::space::types::{GameColor, Key, Position};
 
 mod input;
 use input::*;
@@ -46,6 +51,10 @@ impl RunnableGameInstance for Game {
 
     fn render_frame(&self, screen: GameScreen) {
         Game::render_frame(self, &screen)
+    }
+
+    fn save(&self) -> String {
+        String::from_utf8(Game::save(&self)).unwrap_or_default()
     }
 }
 

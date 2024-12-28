@@ -40,7 +40,7 @@ pub trait ScreenExt {
     fn text(&self, text: &str, position: (f32, f32), size: TextSize, color: GameColor);
 
     fn standard_text(&self, text: &str, position: (f32, f32)) {
-        self.text(text, position, TextSize::Standard, WHITE);
+        self.text(text, position, TextSize::Standard, WHITE.into());
     }
 }
 

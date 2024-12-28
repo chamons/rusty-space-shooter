@@ -2,11 +2,10 @@ use std::sync::{Arc, Mutex};
 
 use crate::{
     caffeinated_gorilla::space::types::{Key, Size},
-    colors::{AQUA, YELLOW},
+    colors::YELLOW,
     exports::caffeinated_gorilla::space::game_api::{KeyboardInfo, MouseInfo},
     infrastructure::Screen,
     state::{GameState, MOVEMENT_SPEED},
-    ui::ScreenExt,
 };
 
 pub struct Game {
@@ -91,7 +90,7 @@ fn draw(state: &mut GameState, screen: &Screen) {
     screen.draw_circle(
         (state.circle.position.x, state.circle.position.y).into(),
         state.circle.size / 2.0,
-        YELLOW,
+        YELLOW.into(),
     );
 
     for square in &state.squares {
@@ -101,7 +100,7 @@ fn draw(state: &mut GameState, screen: &Screen) {
                 width: square.size,
                 height: square.size,
             },
-            AQUA,
+            square.color.clone().into(),
         );
     }
 }

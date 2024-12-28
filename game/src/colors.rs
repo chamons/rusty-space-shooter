@@ -1,34 +1,34 @@
-use crate::caffeinated_gorilla::space::types::GameColor;
+use crate::state::Color;
 
-pub const WHITE: GameColor = GameColor {
+pub const WHITE: Color = Color {
     r: 0.0,
     g: 1.0,
     b: 1.0,
     a: 1.0,
 };
 
-pub const RED: GameColor = GameColor {
+pub const RED: Color = Color {
     r: 1.0,
     g: 0.0,
     b: 0.0,
     a: 1.0,
 };
 
-pub const BLUE: GameColor = GameColor {
+pub const BLUE: Color = Color {
     r: 0.0,
     g: 0.0,
     b: 1.0,
     a: 1.0,
 };
 
-pub const AQUA: GameColor = GameColor {
+pub const AQUA: Color = Color {
     r: 0.0,
     g: 1.0,
     b: 1.0,
     a: 1.0,
 };
 
-pub const YELLOW: GameColor = GameColor {
+pub const YELLOW: Color = Color {
     r: 1.0,
     g: 1.0,
     b: 0.0,
