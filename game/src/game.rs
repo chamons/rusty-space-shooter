@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use crate::{
     caffeinated_gorilla::space::types::{Key, Size},
-    colors::{AQUA, RED, YELLOW},
+    colors::{AQUA, YELLOW},
     exports::caffeinated_gorilla::space::game_api::{KeyboardInfo, MouseInfo},
     infrastructure::Screen,
     state::{GameState, MOVEMENT_SPEED},
@@ -21,14 +21,18 @@ impl Game {
     }
 
     pub fn save(&self) -> Vec<u8> {
-        bincode::serialize(&*self.state.lock().unwrap()).expect("Unable to save state")
+        serde_json::to_string(&*self.state.lock().unwrap())
+            .expect("Unable to save state")
+            .as_bytes()
+            .to_vec()
     }
 
     pub fn restore(&self, data: Vec<u8>) {
-        *self.state.lock().unwrap() = bincode::deserialize(&data).expect("Unable to restore state");
+        *self.state.lock().unwrap() =
+            serde_json::from_slice(&data).expect("Unable to restore state");
     }
 
-    pub fn run_frame(
+    pub fn update_frame(
         &self,
         _mouse: MouseInfo,
         key: KeyboardInfo,
@@ -41,6 +45,10 @@ impl Game {
         process_keyboard_input(&mut state, key, screen, frame_time);
 
         run_physics(&mut state, screen, frame_time);
+    }
+
+    pub fn render_frame(&self, screen: &Screen) {
+        let mut state = self.state.lock().unwrap();
         draw(&mut state, screen);
     }
 }

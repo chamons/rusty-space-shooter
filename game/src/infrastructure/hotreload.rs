@@ -24,7 +24,17 @@ impl GuestGameInstance for Game {
         Game::restore(self, data)
     }
 
-    fn run_frame(&self, mouse: MouseInfo, key: KeyboardInfo, screen: &GameScreen, frame_time: f32) {
-        Game::run_frame(self, mouse, key, screen, frame_time);
+    fn update_frame(
+        &self,
+        mouse: MouseInfo,
+        key: KeyboardInfo,
+        screen: &GameScreen,
+        frame_time: f32,
+    ) {
+        Game::update_frame(self, mouse, key, screen, frame_time);
+    }
+
+    fn render_frame(&self, screen: &GameScreen) {
+        Game::render_frame(self, screen);
     }
 }

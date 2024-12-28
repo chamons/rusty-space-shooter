@@ -1,5 +1,8 @@
+use std::fmt::Debug;
+
 use anyhow::Result;
 use async_trait::async_trait;
+use hotreload::binding::caffeinated_gorilla::space::types::{GameColor, Key, Position};
 use macroquad::prelude::*;
 
 mod input;
@@ -29,23 +32,82 @@ use texture_cache::TextureCache;
 
 #[async_trait]
 pub trait RunnableGameInstance: Send + Sync {
-    fn run_frame(&self, mouse: MouseInfo, key: KeyboardInfo, screen: GameScreen);
+    fn update_frame(&self, mouse: MouseInfo, key: KeyboardInfo, screen: GameScreen);
+    fn render_frame(&self, screen: GameScreen);
+    fn save(&self) -> String;
 }
 
 #[cfg(not(feature = "hotreload"))]
 #[async_trait]
 impl RunnableGameInstance for Game {
-    fn run_frame(&self, mouse: MouseInfo, key: KeyboardInfo, screen: GameScreen) {
-        Game::run_frame(self, mouse, key, &screen, get_frame_time())
+    fn update_frame(&self, mouse: MouseInfo, key: KeyboardInfo, screen: GameScreen) {
+        Game::update_frame(self, mouse, key, &screen, get_frame_time())
+    }
+
+    fn render_frame(&self, screen: GameScreen) {
+        Game::render_frame(self, &screen)
     }
 }
 
-async fn run_frame<R: RunnableGameInstance>(instance: &R, screen: GameScreen) {
+#[derive(Debug, Default)]
+struct DebugState {
+    pub skip_update: bool,
+}
+
+impl DebugState {
+    pub fn toggle_skip_update(&mut self) {
+        self.skip_update = !self.skip_update;
+    }
+}
+
+async fn run_frame<R: RunnableGameInstance>(
+    instance: &R,
+    screen: GameScreen,
+    debug: Option<&mut DebugState>,
+) {
     let mouse = get_mouse_state();
     let key = get_key_info();
-    instance.run_frame(mouse, key, screen.clone());
+
+    // Inserts hot reload keys to skip update frame
+    // Save and dump state to console
+    let mut skip_update = false;
+
+    if cfg!(debug_assertions) {
+        if let Some(debug) = debug {
+            skip_update = debug.skip_update;
+
+            if key.pressed.contains(&Key::F1) {
+                debug.toggle_skip_update();
+            }
+            if key.pressed.contains(&Key::F2) {
+                println!("{}", instance.save());
+            }
+        }
+    }
+
+    if !skip_update {
+        instance.update_frame(mouse, key, screen.clone());
+    }
+    instance.render_frame(screen.clone());
 
     screen.flush_image_draws().await;
+
+    if skip_update {
+        screen.draw_text(
+            "Skip Update",
+            Position {
+                x: (screen.width() / 2.0) - 50.0,
+                y: 30.0,
+            },
+            20.0,
+            GameColor {
+                r: 1.0,
+                g: 0.0,
+                b: 0.0,
+                a: 1.0,
+            },
+        );
+    }
 
     next_frame().await
 }
@@ -55,7 +117,7 @@ async fn run(font: Font, texture_cache: TextureCache) -> Result<()> {
     let screen = GameScreen::new(font, texture_cache);
     let instance = Game::new(&screen);
     loop {
-        run_frame(&instance, screen.clone()).await;
+        run_frame(&instance, screen.clone(), None).await;
     }
 }
 
@@ -69,6 +131,7 @@ async fn run(font: Font, texture_cache: TextureCache) -> Result<()> {
     let mut instance = assembly.create_game_instance(screen.clone())?;
 
     let file_watcher = crate::hotreload::watcher::FileWatcher::new(crate::hotreload::wasm_path()?)?;
+    let mut debug_state = DebugState::default();
 
     loop {
         if file_watcher.changed() {
@@ -81,7 +144,7 @@ async fn run(font: Font, texture_cache: TextureCache) -> Result<()> {
             }
         }
 
-        run_frame(&instance, screen.clone()).await;
+        run_frame(&instance, screen.clone(), Some(&mut debug_state)).await;
     }
 }
 

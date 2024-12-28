@@ -207,11 +207,16 @@ pub struct GameInstance<'a> {
 }
 
 impl GameInstance<'_> {
-    pub fn run_frame(&self, mouse: MouseInfo, key: KeyboardInfo, screen: GameScreen) -> Result<()> {
+    pub fn update_frame(
+        &self,
+        mouse: MouseInfo,
+        key: KeyboardInfo,
+        screen: GameScreen,
+    ) -> Result<()> {
         let mut context = self.context.lock().unwrap();
         let screen = context.store.data_mut().convert_to_resource(screen)?;
 
-        self.instance_type.call_run_frame(
+        self.instance_type.call_update_frame(
             &mut context.store,
             self.instance,
             mouse,
@@ -219,6 +224,14 @@ impl GameInstance<'_> {
             screen,
             get_frame_time(),
         )
+    }
+
+    pub fn render_frame(&self, screen: GameScreen) -> Result<()> {
+        let mut context = self.context.lock().unwrap();
+        let screen = context.store.data_mut().convert_to_resource(screen)?;
+
+        self.instance_type
+            .call_render_frame(&mut context.store, self.instance, screen)
     }
 
     pub fn save(&self) -> Result<Vec<u8>> {
@@ -238,9 +251,18 @@ impl GameInstance<'_> {
 
 #[async_trait::async_trait]
 impl crate::RunnableGameInstance for GameInstance<'_> {
-    fn run_frame(&self, mouse: MouseInfo, key: KeyboardInfo, screen: GameScreen) {
-        if let Err(e) = GameInstance::run_frame(self, mouse, key, screen) {
-            println!("Error running frame: {e:?}");
+    fn update_frame(&self, mouse: MouseInfo, key: KeyboardInfo, screen: GameScreen) {
+        if let Err(e) = GameInstance::update_frame(self, mouse, key, screen) {
+            println!("Error in updating frame: {e:?}");
         }
+    }
+
+    fn render_frame(&self, screen: GameScreen) {
+        if let Err(e) = GameInstance::render_frame(self, screen) {
+            println!("Error in rendering frame: {e:?}");
+        }
+    }
+    fn save(&self) -> String {
+        String::from_utf8(GameInstance::save(&self).unwrap_or_default()).unwrap_or_default()
     }
 }
