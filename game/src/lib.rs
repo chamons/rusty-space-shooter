@@ -22,3 +22,5 @@ export!(GameGuest);
 
 #[allow(dead_code)]
 mod math;
+
+mod score;

@@ -2,11 +2,11 @@ use std::sync::{Arc, Mutex};
 
 use crate::{
     caffeinated_gorilla::space::types::{Key, Size},
-    colors::{RED, YELLOW},
+    colors::{RED, WHITE, YELLOW},
     exports::caffeinated_gorilla::space::game_api::{KeyboardInfo, MouseInfo},
     infrastructure::Screen,
-    math::Position,
     state::{Bullet, GameState, Shape, MOVEMENT_SPEED},
+    ui::{ScreenExt, TextSize},
 };
 
 pub struct Game {
@@ -65,7 +65,10 @@ impl Game {
 
 fn process_new_game_input(state: &mut GameState, key: &KeyboardInfo, screen: &Screen) {
     if key.pressed.contains(&Key::Space) {
+        // Work around the fact that hotreload/web can't write files
+        let high_score = state.score.high_score();
         *state = GameState::new(screen);
+        state.score.set_high_score(high_score);
     }
 }
 
@@ -110,6 +113,7 @@ fn run_physics(state: &mut GameState, screen: &Screen, frame_time: f32) {
             if bullet.shape.collides_with(&enemy.shape) {
                 bullet.collided = true;
                 enemy.is_dead = true;
+                state.score.add(enemy.shape.size.round() as u64);
             }
         }
     }
@@ -154,13 +158,24 @@ fn draw(state: &mut GameState, screen: &Screen) {
         YELLOW.into(),
     );
 
+    screen.standard_text(
+        &format!("Score: {}", state.score.current_score()),
+        (10.0, 30.0),
+    );
+
+    screen.centered_text(
+        &format!("High Score: {}", state.score.high_score()),
+        (screen.width() - 77.0, 30.0),
+        TextSize::Standard,
+        WHITE.into(),
+    );
+
     if state.is_game_over() {
-        const GAME_OVER_TEXT: &str = "Game Over";
-        let dimensions = screen.measure_text(GAME_OVER_TEXT, 50);
-        let text_position = Position {
-            x: (screen.width() / 2.0) - (dimensions.width / 2.0),
-            y: (screen.height() / 2.0),
-        };
-        screen.draw_text(GAME_OVER_TEXT, text_position.into(), 50, RED.into());
+        screen.centered_text(
+            "Game Over",
+            ((screen.width() / 2.0), (screen.height() / 2.0)),
+            TextSize::Large,
+            RED.into(),
+        );
     }
 }

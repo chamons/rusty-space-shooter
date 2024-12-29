@@ -1,6 +1,7 @@
 use crate::{
     colors::{AQUA, BLUE, RED, WHITE, YELLOW},
     math::{Circle, Position, Rect},
+    score::HighScore,
     Screen,
 };
 
@@ -169,6 +170,7 @@ pub struct GameState {
     pub player: Ship,
     pub enemies: Vec<Ship>,
     pub bullets: Vec<Bullet>,
+    pub score: HighScore,
 }
 
 impl GameState {
@@ -178,6 +180,7 @@ impl GameState {
             player: Ship::new_player(screen),
             enemies: vec![],
             bullets: vec![],
+            score: HighScore::load(),
         }
     }
 
@@ -197,7 +200,10 @@ impl GameState {
             .iter()
             .any(|s| s.shape.collides_with(&self.player.shape))
         {
-            self.player.is_dead = true;
+            if !self.player.is_dead {
+                self.player.is_dead = true;
+                self.score.save();
+            }
         }
     }
 }
