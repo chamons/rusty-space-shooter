@@ -26,7 +26,6 @@ impl From<(f32, f32)> for Size {
 }
 
 pub enum TextSize {
-    Large,
     Title,
     Standard,
 }
@@ -34,7 +33,6 @@ pub enum TextSize {
 impl Into<u16> for TextSize {
     fn into(self) -> u16 {
         match self {
-            TextSize::Large => 50,
             TextSize::Title => 40,
             TextSize::Standard => 20,
         }

@@ -182,6 +182,15 @@ interface host-api {
     height: func() -> f32;
 
     measure-text: func(text: string, size: u16) -> text-dimensions;
+
+    // This is hard coded to have an external
+    // UniformDesc::new("direction_modifier", UniformType::Float1),
+    // If you need more, edit shaders directly
+    load-shader: func(fragment: string, vertex: string) -> shader;
+  }
+
+  resource shader {
+    render: func(direction-modifier: f32);
   }
 }
 

@@ -162,6 +162,8 @@ pub struct GameState {
     pub enemies: Vec<Ship>,
     pub bullets: Vec<Bullet>,
     pub score: HighScore,
+
+    pub starfield_direction_modifier: f32,
 }
 
 impl GameState {
@@ -173,6 +175,7 @@ impl GameState {
             enemies: vec![],
             bullets: vec![],
             score: HighScore::load(),
+            starfield_direction_modifier: 0.0,
         }
     }
 

@@ -2,6 +2,7 @@ use crate::exports::caffeinated_gorilla::space::game_api::{Guest, GuestGameInsta
 use crate::exports::caffeinated_gorilla::space::game_api::{KeyboardInfo, MouseInfo};
 
 pub use crate::caffeinated_gorilla::space::host_api::GameScreen;
+pub use crate::caffeinated_gorilla::space::host_api::Shader;
 
 use crate::Game;
 

@@ -21,3 +21,4 @@ export!(GameGuest);
 mod math;
 
 mod score;
+mod shaders;

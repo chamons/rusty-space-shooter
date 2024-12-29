@@ -2,6 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use anyhow::Result;
 
+use caffeinated_gorilla::space::host_api::Shader;
 use caffeinated_gorilla::space::types::{GameColor, Position, Size};
 use macroquad::prelude::*;
 use wasmtime::component::{Component, Linker, Resource, ResourceAny};
@@ -17,6 +18,7 @@ wasmtime::component::bindgen!({
     path: "../wit",
     with: {
         "caffeinated-gorilla:space/host-api/game-screen": GameScreen,
+        "caffeinated-gorilla:space/host-api/shader": crate::shader::Shader,
     },
     trappable_imports: true,
 });
@@ -46,6 +48,7 @@ impl MyState {
 }
 
 impl caffeinated_gorilla::space::host_api::Host for MyState {}
+
 impl caffeinated_gorilla::space::types::Host for MyState {}
 
 impl caffeinated_gorilla::space::host_api::HostGameScreen for MyState {
@@ -142,9 +145,43 @@ impl caffeinated_gorilla::space::host_api::HostGameScreen for MyState {
         })
     }
 
+    #[doc = " This is hard coded to have an external"]
+    #[doc = " UniformDesc::new(\"direction_modifier\", UniformType::Float1),"]
+    #[doc = " If you need more, edit shaders directly"]
+    fn load_shader(
+        &mut self,
+        screen: Resource<GameScreen>,
+        fragment: String,
+        vertex: String,
+    ) -> wasmtime::Result<Resource<Shader>> {
+        debug_assert!(!screen.owned());
+
+        let shader = Shader::new(&fragment, &vertex)?;
+        Ok(self.convert_to_resource(shader)?)
+    }
+
     fn drop(&mut self, screen: Resource<GameScreen>) -> wasmtime::Result<()> {
         debug_assert!(screen.owned());
         self.table.delete(screen)?;
+        Ok(())
+    }
+}
+
+impl caffeinated_gorilla::space::host_api::HostShader for MyState {
+    fn render(
+        &mut self,
+        shader: Resource<Shader>,
+        direction_modifier: f32,
+    ) -> wasmtime::Result<()> {
+        debug_assert!(!shader.owned());
+        let shader = self.table.get(&shader)?;
+        shader.render(direction_modifier);
+        Ok(())
+    }
+
+    fn drop(&mut self, shader: Resource<Shader>) -> wasmtime::Result<()> {
+        debug_assert!(shader.owned());
+        self.table.delete(shader)?;
         Ok(())
     }
 }

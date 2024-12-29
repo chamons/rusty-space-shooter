@@ -192,4 +192,15 @@ impl game::GameScreenInterface for GameScreen {
             offset_y: dimensions.offset_y,
         }
     }
+
+    fn load_shader(&self, fragment: &str, vertex: &str) -> Box<dyn game::ShaderInterface> {
+        Box::new(crate::Shader::new(fragment, vertex).expect("Unable to load shader"))
+    }
+}
+
+#[cfg(not(feature = "hotreload"))]
+impl game::ShaderInterface for crate::Shader {
+    fn render(&self, direction_modifier: f32) {
+        self.render(direction_modifier);
+    }
 }

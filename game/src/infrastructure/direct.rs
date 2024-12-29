@@ -14,6 +14,8 @@ pub trait GameScreenInterface: Send + Sync {
     fn height(&self) -> f32;
 
     fn measure_text(&self, text: &str, size: u16) -> TextDimensions;
+
+    fn load_shader(&self, fragment: &str, vertex: &str) -> GameShader;
 }
 
 #[derive(Debug, Default, Clone, Copy)]
@@ -24,3 +26,10 @@ pub struct TextDimensions {
 }
 
 pub type GameScreen = dyn GameScreenInterface;
+
+#[async_trait]
+pub trait ShaderInterface: Send + Sync {
+    fn render(&self, direction_modifier: f32);
+}
+
+pub type GameShader = Box<dyn ShaderInterface>;

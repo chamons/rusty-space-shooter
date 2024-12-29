@@ -16,6 +16,9 @@ use input::*;
 mod screen;
 pub use screen::GameScreen;
 
+mod shader;
+pub use shader::Shader;
+
 mod texture_cache;
 
 #[cfg(feature = "hotreload")]

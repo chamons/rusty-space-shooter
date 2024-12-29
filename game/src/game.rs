@@ -3,19 +3,22 @@ use std::sync::{Arc, Mutex};
 use crate::{
     caffeinated_gorilla::space::types::{Key, Size},
     exports::caffeinated_gorilla::space::game_api::{KeyboardInfo, MouseInfo},
-    infrastructure::Screen,
+    infrastructure::{Screen, Shader},
+    shaders::load_shader,
     state::{Bullet, GamePhase, GameState, Shape, MOVEMENT_SPEED},
     ui::{ScreenExt, TextSize, RED, WHITE, YELLOW},
 };
 
 pub struct Game {
     state: Arc<Mutex<GameState>>,
+    shader: Box<Shader>,
 }
 
 impl Game {
     pub fn new(screen: &Screen) -> Game {
         Self {
             state: Arc::new(Mutex::new(GameState::new(screen))),
+            shader: Box::new(load_shader(screen)),
         }
     }
 
@@ -79,6 +82,7 @@ impl Game {
 
     pub fn render_frame(&self, screen: &Screen) {
         let mut state = self.state.lock().unwrap();
+        self.shader.render(state.starfield_direction_modifier);
         draw(&mut state, screen);
     }
 }
@@ -109,9 +113,11 @@ fn process_movement(state: &mut GameState, key: &KeyboardInfo, screen: &Screen, 
     }
     if key.down.contains(&Key::Left) {
         player.shape.position.x -= MOVEMENT_SPEED * frame_time;
+        state.starfield_direction_modifier -= 0.05 * frame_time;
     }
     if key.down.contains(&Key::Right) {
         player.shape.position.x += MOVEMENT_SPEED * frame_time;
+        state.starfield_direction_modifier += 0.05 * frame_time;
     }
 
     player.shape.clamp_to_screen(screen);
