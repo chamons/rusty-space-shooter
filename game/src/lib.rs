@@ -19,3 +19,6 @@ mod state;
 
 #[cfg(feature = "hotreload")]
 export!(GameGuest);
+
+#[allow(dead_code)]
+mod math;

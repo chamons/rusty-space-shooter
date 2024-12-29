@@ -4,7 +4,7 @@ use macroquad::{
     color::{Color, WHITE},
     math::Vec2,
     shapes::{draw_circle, draw_line, draw_rectangle},
-    text::{draw_text_ex, Font, TextParams},
+    text::{draw_text_ex, measure_text, Font, TextDimensions, TextParams},
     texture::{draw_texture_ex, DrawTextureParams, Texture2D},
     window::{screen_height, screen_width},
 };
@@ -44,14 +44,14 @@ impl GameScreen {
         texture_cache.get(filename).await.ok()
     }
 
-    pub fn draw_text(&self, text: &str, position: Position, size: f32, color: GameColor) {
+    pub fn draw_text(&self, text: &str, position: Position, size: u16, color: GameColor) {
         draw_text_ex(
             text,
             position.x,
             position.y,
             TextParams {
                 font: Some(&self.font),
-                font_size: size as u16,
+                font_size: size,
                 color: Color {
                     r: color.r,
                     g: color.g,
@@ -147,12 +147,16 @@ impl GameScreen {
     pub fn height(&self) -> f32 {
         screen_height()
     }
+
+    pub fn measure_text(&self, text: &str, size: u16) -> TextDimensions {
+        measure_text(text, Some(&self.font), size, 1.0)
+    }
 }
 
 #[cfg(not(feature = "hotreload"))]
 #[async_trait::async_trait]
 impl game::GameScreenInterface for GameScreen {
-    fn draw_text(&self, text: &str, position: Position, size: f32, color: GameColor) {
+    fn draw_text(&self, text: &str, position: Position, size: u16, color: GameColor) {
         self.draw_text(text, position, size, color);
     }
 
@@ -178,5 +182,14 @@ impl game::GameScreenInterface for GameScreen {
 
     fn height(&self) -> f32 {
         screen_height()
+    }
+
+    fn measure_text(&self, text: &str, size: u16) -> game::TextDimensions {
+        let dimensions = self.measure_text(&text, size);
+        game::TextDimensions {
+            width: dimensions.width,
+            height: dimensions.height,
+            offset_y: dimensions.offset_y,
+        }
     }
 }

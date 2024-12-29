@@ -27,11 +27,11 @@ pub enum TextSize {
     Standard,
 }
 
-impl Into<f32> for TextSize {
-    fn into(self) -> f32 {
+impl Into<u16> for TextSize {
+    fn into(self) -> u16 {
         match self {
-            TextSize::Title => 40.0,
-            TextSize::Standard => 20.0,
+            TextSize::Title => 40,
+            TextSize::Standard => 20,
         }
     }
 }

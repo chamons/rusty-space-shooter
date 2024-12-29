@@ -2,9 +2,10 @@ use std::sync::{Arc, Mutex};
 
 use crate::{
     caffeinated_gorilla::space::types::{Key, Size},
-    colors::YELLOW,
+    colors::{RED, YELLOW},
     exports::caffeinated_gorilla::space::game_api::{KeyboardInfo, MouseInfo},
     infrastructure::Screen,
+    math::Position,
     state::{GameState, MOVEMENT_SPEED},
 };
 
@@ -41,7 +42,10 @@ impl Game {
         let mut state = self.state.lock().unwrap();
         state.add_squares(screen);
 
-        process_keyboard_input(&mut state, key, screen, frame_time);
+        if !state.is_game_over {
+            process_keyboard_movement(&mut state, &key, screen, frame_time);
+        }
+        process_new_game_input(&mut state, &key, screen);
 
         run_physics(&mut state, screen, frame_time);
     }
@@ -52,9 +56,15 @@ impl Game {
     }
 }
 
-fn process_keyboard_input(
+fn process_new_game_input(state: &mut GameState, key: &KeyboardInfo, screen: &Screen) {
+    if key.pressed.contains(&Key::Space) {
+        state.new_game(screen);
+    }
+}
+
+fn process_keyboard_movement(
     state: &mut GameState,
-    key: KeyboardInfo,
+    key: &KeyboardInfo,
     screen: &Screen,
     frame_time: f32,
 ) {
@@ -84,6 +94,8 @@ fn run_physics(state: &mut GameState, screen: &Screen, frame_time: f32) {
     state
         .squares
         .retain(|square| square.position.y < screen.height() + square.size);
+
+    state.check_game_over();
 }
 
 fn draw(state: &mut GameState, screen: &Screen) {
@@ -102,5 +114,15 @@ fn draw(state: &mut GameState, screen: &Screen) {
             },
             square.color.clone().into(),
         );
+    }
+
+    if state.is_game_over {
+        const GAME_OVER_TEXT: &str = "Game Over";
+        let dimensions = screen.measure_text(GAME_OVER_TEXT, 50);
+        let text_position = Position {
+            x: (screen.width() / 2.0) - (dimensions.width / 2.0),
+            y: (screen.height() / 2.0),
+        };
+        screen.draw_text(GAME_OVER_TEXT, text_position.into(), 50, RED.into());
     }
 }

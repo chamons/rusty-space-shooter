@@ -54,7 +54,7 @@ impl caffeinated_gorilla::space::host_api::HostGameScreen for MyState {
         screen: Resource<GameScreen>,
         text: String,
         position: Position,
-        size: f32,
+        size: u16,
         color: GameColor,
     ) -> wasmtime::Result<()> {
         debug_assert!(!screen.owned());
@@ -124,6 +124,22 @@ impl caffeinated_gorilla::space::host_api::HostGameScreen for MyState {
     fn height(&mut self, screen: Resource<GameScreen>) -> wasmtime::Result<f32> {
         debug_assert!(!screen.owned());
         Ok(screen_height())
+    }
+
+    fn measure_text(
+        &mut self,
+        screen: Resource<GameScreen>,
+        text: String,
+        size: u16,
+    ) -> wasmtime::Result<caffeinated_gorilla::space::host_api::TextDimensions> {
+        debug_assert!(!screen.owned());
+        let screen = self.table.get(&screen)?;
+        let size = screen.measure_text(&text, size);
+        Ok(caffeinated_gorilla::space::host_api::TextDimensions {
+            width: size.width,
+            height: size.height,
+            offset_y: size.offset_y,
+        })
     }
 
     fn drop(&mut self, screen: Resource<GameScreen>) -> wasmtime::Result<()> {

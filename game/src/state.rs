@@ -1,5 +1,6 @@
 use crate::{
     colors::{AQUA, BLUE, RED, WHITE, YELLOW},
+    math::{Circle, Position, Rect},
     Screen,
 };
 
@@ -7,21 +8,6 @@ use rand::{seq::SliceRandom, thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 
 pub const MOVEMENT_SPEED: f32 = 200.0;
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Position {
-    pub x: f32,
-    pub y: f32,
-}
-
-impl From<Position> for crate::caffeinated_gorilla::space::types::Position {
-    fn from(value: Position) -> Self {
-        crate::caffeinated_gorilla::space::types::Position {
-            x: value.x,
-            y: value.y,
-        }
-    }
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Color {
@@ -48,6 +34,7 @@ pub struct Shape {
     pub speed: f32,
     pub size: f32,
     pub color: Color,
+    pub is_circle: bool,
 }
 
 impl Shape {
@@ -75,12 +62,38 @@ impl Shape {
             y: self.position.y - half_width,
         }
     }
+
+    pub fn rect(&self) -> Rect {
+        Rect {
+            x: self.position.x - self.half_width(),
+            y: self.position.y - self.half_width(),
+            w: self.size,
+            h: self.size,
+        }
+    }
+
+    pub fn circle(&self) -> Circle {
+        Circle {
+            x: self.position.x - self.half_width(),
+            y: self.position.y - self.half_width(),
+            r: self.size,
+        }
+    }
+
+    pub fn collides_with(&self, other: &Self) -> bool {
+        if self.is_circle {
+            self.circle().overlaps_rect(&other.rect())
+        } else {
+            self.rect().overlaps(&other.rect())
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GameState {
     pub circle: Shape,
     pub squares: Vec<Shape>,
+    pub is_game_over: bool,
 }
 
 impl GameState {
@@ -94,8 +107,10 @@ impl GameState {
                 speed: MOVEMENT_SPEED,
                 size: 32.0,
                 color: YELLOW,
+                is_circle: true,
             },
             squares: vec![],
+            is_game_over: false,
         }
     }
 
@@ -114,7 +129,23 @@ impl GameState {
                 speed,
                 size,
                 color: color.clone(),
+                is_circle: false,
             });
         }
+    }
+
+    pub fn check_game_over(&mut self) {
+        if self.squares.iter().any(|s| s.collides_with(&self.circle)) {
+            self.is_game_over = true
+        }
+    }
+
+    pub fn new_game(&mut self, screen: &Screen) {
+        self.squares.clear();
+        self.circle.position = Position {
+            x: screen.width() / 2.0,
+            y: screen.height() / 2.0,
+        };
+        self.is_game_over = false;
     }
 }

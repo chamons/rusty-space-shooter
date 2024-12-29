@@ -108,7 +108,7 @@ async fn run_frame<R: RunnableGameInstance>(
                 x: (screen.width() / 2.0) - 50.0,
                 y: 30.0,
             },
-            20.0,
+            20,
             GameColor {
                 r: 1.0,
                 g: 0.0,
