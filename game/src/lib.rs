@@ -4,9 +4,6 @@ wit_bindgen::generate!({
 });
 
 #[allow(dead_code)]
-mod colors;
-
-#[allow(dead_code)]
 mod ui;
 
 mod game;

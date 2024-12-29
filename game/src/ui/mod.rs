@@ -1,8 +1,11 @@
 use crate::{
     caffeinated_gorilla::space::types::{GameColor, Position, Size},
-    colors::WHITE,
     infrastructure::Screen,
 };
+
+#[allow(dead_code)]
+mod colors;
+pub use colors::*;
 
 impl From<(f32, f32)> for Position {
     fn from(value: (f32, f32)) -> Self {

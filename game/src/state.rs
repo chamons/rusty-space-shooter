@@ -1,7 +1,7 @@
 use crate::{
-    colors::{AQUA, BLUE, RED, WHITE, YELLOW},
     math::{Circle, Position, Rect},
     score::HighScore,
+    ui::{Color, AQUA, BLUE, RED, WHITE, YELLOW},
     Screen,
 };
 
@@ -9,25 +9,6 @@ use rand::{seq::SliceRandom, thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 
 pub const MOVEMENT_SPEED: f32 = 200.0;
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Color {
-    pub r: f32,
-    pub g: f32,
-    pub b: f32,
-    pub a: f32,
-}
-
-impl From<Color> for crate::caffeinated_gorilla::space::types::GameColor {
-    fn from(value: Color) -> Self {
-        crate::caffeinated_gorilla::space::types::GameColor {
-            r: value.r,
-            g: value.g,
-            b: value.b,
-            a: value.a,
-        }
-    }
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Shape {

@@ -2,11 +2,10 @@ use std::sync::{Arc, Mutex};
 
 use crate::{
     caffeinated_gorilla::space::types::{Key, Size},
-    colors::{RED, WHITE, YELLOW},
     exports::caffeinated_gorilla::space::game_api::{KeyboardInfo, MouseInfo},
     infrastructure::Screen,
     state::{Bullet, GameState, Shape, MOVEMENT_SPEED},
-    ui::{ScreenExt, TextSize},
+    ui::{ScreenExt, TextSize, RED, WHITE, YELLOW},
 };
 
 pub struct Game {
