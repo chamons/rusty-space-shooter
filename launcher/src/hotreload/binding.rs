@@ -6,7 +6,7 @@ use caffeinated_gorilla::space::types::{GameColor, Position, Size};
 use macroquad::prelude::*;
 use wasmtime::component::{Component, Linker, Resource, ResourceAny};
 use wasmtime::{Config, Engine, Store};
-use wasmtime_wasi::{ResourceTable, WasiCtx, WasiCtxBuilder, WasiView};
+use wasmtime_wasi::{DirPerms, FilePerms, ResourceTable, WasiCtx, WasiCtxBuilder, WasiView};
 
 use exports::caffeinated_gorilla::space::game_api::{GuestGameInstance, KeyboardInfo, MouseInfo};
 
@@ -162,6 +162,8 @@ impl WebAssemblyContext {
         let engine = Engine::new(&config)?;
 
         let mut wasi = WasiCtxBuilder::new();
+        wasi.inherit_stdio();
+        wasi.preopened_dir(".", ".", DirPerms::all(), FilePerms::all())?;
 
         let store = Store::new(
             &engine,

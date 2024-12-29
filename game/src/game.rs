@@ -65,10 +65,7 @@ impl Game {
 
 fn process_new_game_input(state: &mut GameState, key: &KeyboardInfo, screen: &Screen) {
     if key.pressed.contains(&Key::Space) {
-        // Work around the fact that hotreload/web can't write files
-        let high_score = state.score.high_score();
         *state = GameState::new(screen);
-        state.score.set_high_score(high_score);
     }
 }
 

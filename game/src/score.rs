@@ -30,10 +30,6 @@ impl HighScore {
         self.high_score
     }
 
-    pub fn set_high_score(&mut self, high_score: u64) {
-        self.high_score = high_score;
-    }
-
     pub fn add(&mut self, addition: u64) {
         self.score += addition;
         if self.score > self.high_score {
