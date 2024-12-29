@@ -4,7 +4,7 @@ use crate::{
     caffeinated_gorilla::space::types::{Key, Size},
     exports::caffeinated_gorilla::space::game_api::{KeyboardInfo, MouseInfo},
     infrastructure::Screen,
-    state::{Bullet, GameState, Shape, MOVEMENT_SPEED},
+    state::{Bullet, GamePhase, GameState, Shape, MOVEMENT_SPEED},
     ui::{ScreenExt, TextSize, RED, WHITE, YELLOW},
 };
 
@@ -42,18 +42,39 @@ impl Game {
         frame_time: f32,
     ) {
         let mut state = self.state.lock().unwrap();
-        state.update_frame += 1;
 
-        state.add_enemy(screen);
-
-        if !state.is_game_over() {
-            process_movement(&mut state, &key, screen, frame_time);
-            process_shoot(&mut state, &key);
-        } else {
-            process_new_game_input(&mut state, &key, screen);
+        if !matches!(state.phase, GamePhase::Paused) {
+            state.update_frame += 1;
+            state.add_enemy(screen);
         }
 
-        run_physics(&mut state, screen, frame_time);
+        match state.phase {
+            GamePhase::MainMenu => {
+                if key.pressed.contains(&Key::Space) {
+                    *state = GameState::new(screen);
+                    state.phase = GamePhase::Playing;
+                }
+            }
+            GamePhase::Playing => {
+                process_movement(&mut state, &key, screen, frame_time);
+                process_shoot(&mut state, &key);
+                if key.pressed.contains(&Key::Escape) {
+                    state.phase = GamePhase::Paused;
+                }
+            }
+            GamePhase::Paused => {
+                if key.pressed.contains(&Key::Space) {
+                    state.phase = GamePhase::Playing;
+                }
+            }
+            GamePhase::GameOver => {
+                process_new_game_input(&mut state, &key, screen);
+            }
+        }
+
+        if !matches!(state.phase, GamePhase::Paused) {
+            run_physics(&mut state, screen, frame_time);
+        }
     }
 
     pub fn render_frame(&self, screen: &Screen) {
@@ -129,6 +150,53 @@ fn is_on_screen(screen: &Screen, shape: &Shape) -> bool {
 }
 
 fn draw(state: &mut GameState, screen: &Screen) {
+    match state.phase {
+        GamePhase::MainMenu => {
+            draw_entities(state, screen);
+            draw_high_score(state, screen);
+
+            screen.centered_text(
+                "Press Space to Start",
+                ((screen.width() / 2.0), (screen.height() / 2.0)),
+                TextSize::Title,
+                WHITE.into(),
+            );
+        }
+        GamePhase::Playing => {
+            draw_entities(state, screen);
+            draw_player(state, screen);
+            draw_score(state, screen);
+            draw_high_score(state, screen);
+        }
+        GamePhase::Paused => {
+            draw_entities(state, screen);
+            draw_player(state, screen);
+            draw_score(state, screen);
+            draw_high_score(state, screen);
+
+            screen.centered_text(
+                "Paused (Press Space)",
+                ((screen.width() / 2.0), (screen.height() / 2.0)),
+                TextSize::Title,
+                WHITE.into(),
+            );
+        }
+        GamePhase::GameOver => {
+            draw_entities(state, screen);
+            draw_score(state, screen);
+            draw_high_score(state, screen);
+
+            screen.centered_text(
+                "Game Over (Press Space)",
+                ((screen.width() / 2.0), (screen.height() / 2.0)),
+                TextSize::Title,
+                RED.into(),
+            );
+        }
+    }
+}
+
+fn draw_entities(state: &mut GameState, screen: &Screen) {
     for enemy in &state.enemies {
         screen.draw_rectangle(
             enemy.shape.upper_left().into(),
@@ -147,31 +215,28 @@ fn draw(state: &mut GameState, screen: &Screen) {
             RED.into(),
         );
     }
+}
 
+fn draw_player(state: &mut GameState, screen: &Screen) {
     screen.draw_circle(
         (state.player.shape.position.x, state.player.shape.position.y).into(),
         state.player.shape.size / 2.0,
         YELLOW.into(),
     );
+}
 
+fn draw_score(state: &mut GameState, screen: &Screen) {
     screen.standard_text(
         &format!("Score: {}", state.score.current_score()),
         (10.0, 30.0),
     );
+}
 
+fn draw_high_score(state: &mut GameState, screen: &Screen) {
     screen.centered_text(
         &format!("High Score: {}", state.score.high_score()),
         (screen.width() - 77.0, 30.0),
         TextSize::Standard,
         WHITE.into(),
     );
-
-    if state.is_game_over() {
-        screen.centered_text(
-            "Game Over",
-            ((screen.width() / 2.0), (screen.height() / 2.0)),
-            TextSize::Large,
-            RED.into(),
-        );
-    }
 }

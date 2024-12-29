@@ -146,8 +146,18 @@ impl Bullet {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub enum GamePhase {
+    MainMenu,
+    Playing,
+    Paused,
+    GameOver,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct GameState {
     pub update_frame: u64,
+    pub phase: GamePhase,
+
     pub player: Ship,
     pub enemies: Vec<Ship>,
     pub bullets: Vec<Bullet>,
@@ -158,15 +168,12 @@ impl GameState {
     pub fn new(screen: &Screen) -> Self {
         Self {
             update_frame: 0,
+            phase: GamePhase::MainMenu,
             player: Ship::new_player(screen),
             enemies: vec![],
             bullets: vec![],
             score: HighScore::load(),
         }
-    }
-
-    pub fn is_game_over(&self) -> bool {
-        self.player.is_dead
     }
 
     pub fn add_enemy(&mut self, screen: &Screen) {
@@ -176,13 +183,14 @@ impl GameState {
     }
 
     pub fn check_player_hit(&mut self) {
-        if self
-            .enemies
-            .iter()
-            .any(|s| s.shape.collides_with(&self.player.shape))
-        {
-            if !self.player.is_dead {
+        if matches!(self.phase, GamePhase::Playing) {
+            if self
+                .enemies
+                .iter()
+                .any(|s| s.shape.collides_with(&self.player.shape))
+            {
                 self.player.is_dead = true;
+                self.phase = GamePhase::GameOver;
                 self.score.save();
             }
         }
