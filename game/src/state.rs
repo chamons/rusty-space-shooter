@@ -92,6 +92,7 @@ impl Shape {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Ship {
     pub shape: Shape,
+    pub last_fired: u64,
     pub is_dead: bool,
 }
 
@@ -109,6 +110,7 @@ impl Ship {
                 is_circle: true,
             },
             is_dead: false,
+            last_fired: 0,
         }
     }
 
@@ -130,21 +132,52 @@ impl Ship {
                 is_circle: false,
             },
             is_dead: false,
+            last_fired: 0,
+        }
+    }
+
+    const FIRE_RATE: u64 = 30;
+    pub fn can_shoot(&self, update_frame: u64) -> bool {
+        (update_frame - self.last_fired) > Self::FIRE_RATE
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Bullet {
+    pub shape: Shape,
+    pub collided: bool,
+}
+
+impl Bullet {
+    pub fn new(shooter: &Ship) -> Bullet {
+        Bullet {
+            shape: Shape {
+                position: shooter.shape.position.clone(),
+                speed: shooter.shape.speed * 2.0,
+                size: 5.0,
+                color: RED,
+                is_circle: true,
+            },
+            collided: false,
         }
     }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GameState {
+    pub update_frame: u64,
     pub player: Ship,
     pub enemies: Vec<Ship>,
+    pub bullets: Vec<Bullet>,
 }
 
 impl GameState {
     pub fn new(screen: &Screen) -> Self {
         Self {
+            update_frame: 0,
             player: Ship::new_player(screen),
             enemies: vec![],
+            bullets: vec![],
         }
     }
 
@@ -152,7 +185,7 @@ impl GameState {
         self.player.is_dead
     }
 
-    pub fn enemies(&mut self, screen: &Screen) {
+    pub fn add_enemy(&mut self, screen: &Screen) {
         if thread_rng().gen_range(0..99) > 95 {
             self.enemies.push(Ship::new_enemy(screen));
         }
@@ -166,10 +199,5 @@ impl GameState {
         {
             self.player.is_dead = true;
         }
-    }
-
-    pub fn new_game(&mut self, screen: &Screen) {
-        self.enemies.clear();
-        self.player = Ship::new_player(screen);
     }
 }
