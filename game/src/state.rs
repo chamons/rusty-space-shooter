@@ -90,16 +90,15 @@ impl Shape {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct GameState {
-    pub circle: Shape,
-    pub squares: Vec<Shape>,
-    pub is_game_over: bool,
+pub struct Ship {
+    pub shape: Shape,
+    pub is_dead: bool,
 }
 
-impl GameState {
-    pub fn new(screen: &Screen) -> Self {
+impl Ship {
+    pub fn new_player(screen: &Screen) -> Self {
         Self {
-            circle: Shape {
+            shape: Shape {
                 position: Position {
                     x: screen.width() / 2.0,
                     y: screen.height() / 2.0,
@@ -109,43 +108,68 @@ impl GameState {
                 color: YELLOW,
                 is_circle: true,
             },
-            squares: vec![],
-            is_game_over: false,
+            is_dead: false,
         }
     }
 
-    pub fn add_squares(&mut self, screen: &Screen) {
+    pub fn new_enemy(screen: &Screen) -> Self {
         let mut rng = thread_rng();
-        if rng.gen_range(0..99) > 95 {
-            let size = rng.gen_range(16.0..64.0);
-            let speed = rng.gen_range(50.0..150.0);
-            let position = Position {
-                x: rng.gen_range((size / 2.0)..(screen.width() - size / 2.0)),
-                y: -size,
-            };
-            let color = [WHITE, RED, AQUA, BLUE, YELLOW].choose(&mut rng).unwrap();
-            self.squares.push(Shape {
+        let size = rng.gen_range(16.0..64.0);
+        let speed = rng.gen_range(50.0..150.0);
+        let position = Position {
+            x: rng.gen_range((size / 2.0)..(screen.width() - size / 2.0)),
+            y: -size,
+        };
+        let color = [WHITE, RED, AQUA, BLUE, YELLOW].choose(&mut rng).unwrap();
+        Ship {
+            shape: Shape {
                 position,
                 speed,
                 size,
                 color: color.clone(),
                 is_circle: false,
-            });
+            },
+            is_dead: false,
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct GameState {
+    pub player: Ship,
+    pub enemies: Vec<Ship>,
+}
+
+impl GameState {
+    pub fn new(screen: &Screen) -> Self {
+        Self {
+            player: Ship::new_player(screen),
+            enemies: vec![],
         }
     }
 
-    pub fn check_game_over(&mut self) {
-        if self.squares.iter().any(|s| s.collides_with(&self.circle)) {
-            self.is_game_over = true
+    pub fn is_game_over(&self) -> bool {
+        self.player.is_dead
+    }
+
+    pub fn enemies(&mut self, screen: &Screen) {
+        if thread_rng().gen_range(0..99) > 95 {
+            self.enemies.push(Ship::new_enemy(screen));
+        }
+    }
+
+    pub fn check_player_hit(&mut self) {
+        if self
+            .enemies
+            .iter()
+            .any(|s| s.shape.collides_with(&self.player.shape))
+        {
+            self.player.is_dead = true;
         }
     }
 
     pub fn new_game(&mut self, screen: &Screen) {
-        self.squares.clear();
-        self.circle.position = Position {
-            x: screen.width() / 2.0,
-            y: screen.height() / 2.0,
-        };
-        self.is_game_over = false;
+        self.enemies.clear();
+        self.player = Ship::new_player(screen);
     }
 }

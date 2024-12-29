@@ -2,7 +2,7 @@ use std::sync::{Arc, Mutex};
 
 use crate::{
     caffeinated_gorilla::space::types::{Key, Size},
-    colors::{RED, YELLOW},
+    colors::{AQUA, RED, YELLOW},
     exports::caffeinated_gorilla::space::game_api::{KeyboardInfo, MouseInfo},
     infrastructure::Screen,
     math::Position,
@@ -40,9 +40,9 @@ impl Game {
         frame_time: f32,
     ) {
         let mut state = self.state.lock().unwrap();
-        state.add_squares(screen);
+        state.enemies(screen);
 
-        if !state.is_game_over {
+        if !state.is_game_over() {
             process_keyboard_movement(&mut state, &key, screen, frame_time);
         }
         process_new_game_input(&mut state, &key, screen);
@@ -68,55 +68,55 @@ fn process_keyboard_movement(
     screen: &Screen,
     frame_time: f32,
 ) {
-    let circle = &mut state.circle;
+    let player = &mut state.player;
 
     if key.down.contains(&Key::Up) {
-        circle.position.y -= MOVEMENT_SPEED * frame_time;
+        player.shape.position.y -= MOVEMENT_SPEED * frame_time;
     }
     if key.down.contains(&Key::Down) {
-        circle.position.y += MOVEMENT_SPEED * frame_time;
+        player.shape.position.y += MOVEMENT_SPEED * frame_time;
     }
     if key.down.contains(&Key::Left) {
-        circle.position.x -= MOVEMENT_SPEED * frame_time;
+        player.shape.position.x -= MOVEMENT_SPEED * frame_time;
     }
     if key.down.contains(&Key::Right) {
-        circle.position.x += MOVEMENT_SPEED * frame_time;
+        player.shape.position.x += MOVEMENT_SPEED * frame_time;
     }
 
-    circle.clamp_to_screen(screen);
+    player.shape.clamp_to_screen(screen);
 }
 
 fn run_physics(state: &mut GameState, screen: &Screen, frame_time: f32) {
-    for square in &mut state.squares {
-        square.position.y += square.speed * frame_time;
+    for enemy in &mut state.enemies {
+        enemy.shape.position.y += enemy.shape.speed * frame_time;
     }
 
     state
-        .squares
-        .retain(|square| square.position.y < screen.height() + square.size);
+        .enemies
+        .retain(|enemy| enemy.shape.position.y < screen.height() + enemy.shape.size);
 
-    state.check_game_over();
+    state.check_player_hit();
 }
 
 fn draw(state: &mut GameState, screen: &Screen) {
     screen.draw_circle(
-        (state.circle.position.x, state.circle.position.y).into(),
-        state.circle.size / 2.0,
-        YELLOW.into(),
+        (state.player.shape.position.x, state.player.shape.position.y).into(),
+        state.player.shape.size / 2.0,
+        AQUA.into(),
     );
 
-    for square in &state.squares {
+    for enemy in &state.enemies {
         screen.draw_rectangle(
-            square.upper_left().into(),
+            enemy.shape.upper_left().into(),
             Size {
-                width: square.size,
-                height: square.size,
+                width: enemy.shape.size,
+                height: enemy.shape.size,
             },
-            square.color.clone().into(),
+            enemy.shape.color.clone().into(),
         );
     }
 
-    if state.is_game_over {
+    if state.is_game_over() {
         const GAME_OVER_TEXT: &str = "Game Over";
         let dimensions = screen.measure_text(GAME_OVER_TEXT, 50);
         let text_position = Position {
